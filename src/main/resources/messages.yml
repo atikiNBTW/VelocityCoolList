@@ -1,0 +1,43 @@
+# There you can configure plugin messages
+# It is also supports MiniMessage
+# List of available placeholders (they can vary depending on the command): $SOURCE, $PLAYER, $STATUS, $WHITELIST_SIZE, $WHITELIST
+
+kick_message: "<light_purple>Whitelist is enabled and</light_purple> <red><bold>you</red> <light_purple>are not on it!"
+
+# Status message
+whitelist_enabled: "<green>enabled!"
+whitelist_disabled: "<dark_red>disabled!"
+
+# Commands
+### Allowed placeholders: $SOURCE, $STATUS
+status: "<dark_purple>Whitelist is $STATUS"
+
+### Allowed placeholders: $SOURCE
+enable: "<dark_purple>Whitelist is now <dark_green><bold> enabled!"
+already_enabled: "<red>Whitelist is already enabled"
+
+### Allowed placeholders: $SOURCE
+disable: "<dark_purple>Whitelist is now <dark_red><bold>disabled!"
+already_disabled: "<red>Whitelist is already disabled"
+
+### Allowed placeholders: $SOURCE, $PLAYER
+add: "<green>Added $PLAYER to the whitelist!"
+already_on_whitelist: "<red>$PLAYER is already whitelisted!"
+add_incorrect_usage: "<red>Incorrect usage! The syntax is /vclist add (username)"              # <- $PLAYER isn't allowed
+
+### Allowed placeholders: $SOURCE, $PLAYER
+remove: "<green>Removed $PLAYER from the whitelist!"
+not_on_whitelist: "<red>$PLAYER is not whitelisted!"
+remove_incorrect_usage: "<red>Incorrect usage! The syntax is /vclist remove (username)"        # <- $PLAYER isn't allowed
+
+### Allowed placeholders: $SOURCE, $WHITELIST_SIZE, #WHITELIST
+list: "<dark_purple>There are currently $WHITELIST_SIZE player(s) on the whitelist: $WHITELIST"
+list_no_players: "<dark_purple>There are no whitelisted players!"                              # <- $WHITELIST and $WHITELIST_SIZE aren't allowed
+
+### Allowed placeholders: $SOURCE
+clear: "<green>Whitelist has been cleared!"
+clear_disabled: "<red>Clear command is disabled! You can enable it in the config file."
+
+### Allowed placeholders: $SOURCE
+reload: "<dark_purple>Whitelist reloaded!"
+reload_error: "<red>An error occurred while reloading the plugin, check the console for details."

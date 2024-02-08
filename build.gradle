@@ -1,0 +1,89 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
+plugins {
+    id 'java'
+    id 'eclipse'
+    id "org.jetbrains.gradle.plugin.idea-ext" version "1.0.1"
+    id "xyz.jpenilla.run-velocity" version "2.2.2"
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+}
+
+group = 'com.atikinbtw'
+version = '2.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+    maven {
+        name = 'papermc'
+        url = 'https://repo.papermc.io/repository/maven-public/'
+    }
+    maven {
+        name = 'jitpack'
+        url = 'https://jitpack.io'
+    }
+}
+
+tasks.runVelocity {
+    velocityVersion("3.3.0-SNAPSHOT")
+}
+
+dependencies {
+    compileOnly 'com.velocitypowered:velocity-api:3.3.0-SNAPSHOT'
+    annotationProcessor 'com.velocitypowered:velocity-api:3.3.0-SNAPSHOT'
+
+    compileOnly 'org.projectlombok:lombok:1.18.30'
+    annotationProcessor 'org.projectlombok:lombok:1.18.30'
+
+    implementation 'com.github.Carleslc.Simple-YAML:Simple-Yaml:1.8.4'
+}
+
+def targetJavaVersion = 17
+java {
+    def javaVersion = JavaVersion.toVersion(targetJavaVersion)
+    sourceCompatibility = javaVersion
+    targetCompatibility = javaVersion
+    if (JavaVersion.current() < javaVersion) {
+        toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+
+    if (targetJavaVersion >= 10 || JavaVersion.current().isJava10Compatible()) {
+        options.release.set(targetJavaVersion)
+    }
+}
+
+jar {
+    finalizedBy("shadowJar")
+    archiveFileName.set(project.name + "-" + archiveVersion.get() + "-original.jar")
+}
+
+shadowJar {
+    archiveFileName.set(project.name + "-" + archiveVersion.get() + ".jar")
+
+    // Classifier for publishing
+    archiveClassifier.set("shaded")
+
+    mustRunAfter("build")
+
+    // Merge META-INF/services files where needed
+    mergeServiceFiles()
+
+    // Exclude signatures, maven/ and proguard/ from META-INF
+    exclude("META-INF/*.SF")
+    exclude("META-INF/*.DSA")
+    exclude("META-INF/*.RSA")
+    exclude("META-INF/maven/**")
+    exclude("META-INF/proguard/**")
+
+    dependencies {
+        include(dependency("com.github.Carleslc.Simple-YAML:Simple-Yaml:1.8.4"))
+    }
+}
+
+tasks.named('shadowJar', ShadowJar) {
+    enableRelocation true
+    relocationPrefix "VelocityCoolList"
+}
