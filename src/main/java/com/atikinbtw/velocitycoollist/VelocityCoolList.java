@@ -71,7 +71,9 @@ public class VelocityCoolList {
         commandManager.register(commandMeta, commandToRegister);
 
         logger.info("VelocityCoolList has been enabled!" + " Took " + (System.currentTimeMillis() - startTime.getTime()) + "ms");
-        checkForUpdates();
+        if ((boolean) Config.get("autoupdate", true)) {
+            checkForUpdates();
+        }
     }
 
     @Subscribe(order = PostOrder.FIRST)
