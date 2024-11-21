@@ -32,8 +32,8 @@ All the configuration is in the config.yml file, here it is:
 # Enable or disable Velocity Cool whitelist!
 enabled: true
 
-# Enable or disable autoupdate
-autoupdate: true
+# Enable or disable automatic update checker
+update_check: true
 
 # Set the prefix of the plugin!
 prefix: "<gradient:#5e4fa2:#f79459>VelocityCoolList</gradient> <red><bold>>>></red>"
