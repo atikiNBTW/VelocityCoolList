@@ -31,7 +31,7 @@ import java.util.Scanner;
 @Plugin(
         id = "velocitycoollist",
         name = "VelocityCoolList",
-        version = "2.0.0-SNAPSHOT",
+        version = "2.1.0-SNAPSHOT",
         description = "Plugin for Velocity that provides nickname-based whitelisting without complex!",
         url = "https://modrinth.com/plugin/velocitycoollist",
         authors = {"atikiNBTW"}
