@@ -154,6 +154,10 @@ public final class Config {
         return config.get(key);
     }
 
+    public static Object get(String key, Object def) {
+        return config.get(key, def);
+    }
+
     public static String getMessage(String key) {
         return messages.getString(key);
     }
