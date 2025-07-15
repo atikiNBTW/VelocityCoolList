@@ -4,7 +4,7 @@
 enabled: true
 
 # Enable or disable automatic update checker
-update_check: true
+update_checker: true
 
 # Set the prefix of the plugin!
 prefix: "<gradient:#5e4fa2:#f79459>VelocityCoolList</gradient> <red><bold>>>></red>"
@@ -12,12 +12,5 @@ prefix: "<gradient:#5e4fa2:#f79459>VelocityCoolList</gradient> <red><bold>>>></r
 # DANGEROUS: Here you can enable of disable the whitelist clear command, be careful!
 enable_clear_command: false
 
-# cant figure out how to make this work, so it's disabled
-# this doesn't do anything right now
-# Plugin order (this is the order in which the plugin would get PlayerJoin event, may be helpful if you want to improve compatibility with other plugins)
-# Can be: FIRST, EARLY, NORMAL, LATE, LAST
-# Default is FIRST
-#order: FIRST
-
 # Do not touch
-config_version: 1
+config_version: 2

@@ -1,8 +1,6 @@
 package com.atikinbtw.velocitycoollist;
 
 import com.google.gson.Gson;
-import com.moandjiezana.toml.Toml;
-import lombok.Getter;
 import org.simpleyaml.configuration.file.YamlFile;
 
 import java.io.IOException;
@@ -14,32 +12,142 @@ import java.nio.file.Path;
 import java.util.HashSet;
 
 public final class Config {
-    private static YamlFile config;
-    private static YamlFile messages;
-    @Getter
-    private static HashSet<String> whitelist = new HashSet<>();
-    @Getter
-    private static VelocityCoolList plugin;
+    private static Config INSTANCE;
+    private final VelocityCoolList plugin;
+    private YamlFile config;
+    private YamlFile messages;
+    private HashSet<String> whitelist = new HashSet<>();
 
-    /**
-     * Initialize the configuration for the VelocityCoolList plugin.
-     *
-     * @param plugin the VelocityCoolList plugin to initialize the configuration for
-     */
-    public static void initializeConfig(VelocityCoolList plugin) {
-        Config.plugin = plugin;
-        plugin.getLogger().info("Loading config...");
+    public Config(VelocityCoolList plugin) {
+        this.plugin = plugin;
+        INSTANCE = this;
+    }
 
-        // get the files
-        config = new YamlFile(Path.of(plugin.getDataDirectory() + "/config.yml").toUri());
-        messages = new YamlFile(Path.of(plugin.getDataDirectory() + "/messages.yml").toUri());
+    public static Config getInstance() {
+        if (INSTANCE == null)
+            throw new IllegalStateException("Config has not been initialized");
 
-        // create plugin folder if it doesn't exist
-        if (!plugin.getDataDirectory().toFile().exists()) {
+        return INSTANCE;
+    }
+
+    public void saveWhitelistFile() {
+        plugin.scheduleTask(() -> {
             try {
-                plugin.getDataDirectory().toFile().mkdir();
+                Gson gson = new Gson();
+                String json = gson.toJson(whitelist);
+
+                Files.writeString(Path.of(plugin.DATADIRECTORY + "/whitelist.json"), json);
+            } catch (IOException e) {
+                plugin.LOGGER.error("Error happened while saving whitelist.json: ", e);
+            }
+        });
+    }
+
+    public void saveConfigFile() {
+        plugin.scheduleTask(() -> {
+            try {
+                config.save();
+            } catch (IOException e) {
+                plugin.LOGGER.error("Error happened while saving the config.yml: ", e);
+            }
+        });
+    }
+
+    public void reload() throws IOException {
+        loadWhitelist();
+        messages.loadWithComments();
+        config.loadWithComments();
+    }
+
+    public void setAndSave(String key, Object value) {
+        config.set(key, value);
+
+        saveConfigFile();
+    }
+
+    public void setConfig(String path, Object value) {
+        config.set(path, value);
+    }
+
+    public void setMessage(String path, String value) {
+        messages.set(path, value);
+    }
+
+    public void saveMessages() {
+        plugin.scheduleTask(() -> {
+            try {
+                messages.save();
+            } catch (IOException e) {
+                plugin.LOGGER.error("Error happened while saving the config.yml: ", e);
+            }
+        });
+    }
+
+    public Object get(String key) {
+        return config.get(key);
+    }
+
+    public Boolean getBoolean(String key) {
+        return config.getBoolean(key);
+    }
+
+    public void addWhitelist(String nickname) {
+        this.whitelist.add(nickname);
+    }
+
+    public Boolean isWhitelistEmpty() {
+        return whitelist.isEmpty();
+    }
+
+    public void clearWhitelist() {
+        this.whitelist.clear();
+    }
+
+    public void removeWhitelist(String nickname) {
+        this.whitelist.remove(nickname);
+    }
+
+    public Boolean getBoolean(String key, Boolean defaultValue) {
+        return config.getBoolean(key, defaultValue);
+    }
+
+    public Boolean whitelistContains(String nickname) {
+        return whitelist.contains(nickname);
+    }
+
+    public Object get(String key, Object defaultValue) {
+        return config.get(key, defaultValue);
+    }
+
+    public String getMessage(String key) {
+        return messages.getString(key);
+    }
+
+    private void loadWhitelist() throws IOException {
+        Path whitelistPath = Path.of(plugin.DATADIRECTORY + "/whitelist.json");
+        Gson gson = new Gson();
+
+        if (!Files.exists(whitelistPath)) {
+            Files.createFile(whitelistPath);
+            Files.writeString(whitelistPath, "[]");
+        }
+
+        Reader reader = new InputStreamReader(whitelistPath.toFile().toURI().toURL().openStream());
+        whitelist = gson.fromJson(reader, HashSet.class);
+        reader.close();
+    }
+
+    public void initialize() {
+        plugin.LOGGER.info("Loading config...");
+
+        config = new YamlFile(Path.of(plugin.DATADIRECTORY + "/config.yml").toUri());
+        messages = new YamlFile(Path.of(plugin.DATADIRECTORY + "/messages.yml").toUri());
+
+        if (!plugin.DATADIRECTORY.toFile().exists()) {
+            try {
+                plugin.DATADIRECTORY.toFile().mkdir();
             } catch (Exception e) {
-                plugin.getLogger().error("Failed to create plugin data directory: ", e);
+                plugin.LOGGER.error("Failed to create plugin data directory: ", e);
                 return;
             }
         }
@@ -47,10 +155,9 @@ public final class Config {
         try {
             loadWhitelist();
         } catch (IOException e) {
-            plugin.getLogger().error("Error happened while loading whitelist.json: ", e);
+            plugin.LOGGER.error("Error happened while loading whitelist.json: ", e);
         }
 
-        // copy config if it doesn't exist
         if (!config.exists()) {
             try {
                 InputStream resource = VelocityCoolList.class.getResourceAsStream("/config.yml");
@@ -58,12 +165,11 @@ public final class Config {
                 Files.copy(resource, Path.of(config.getFilePath()));
                 resource.close();
             } catch (Exception e) {
-                plugin.getLogger().error("Error happened while creating config.yml: ", e);
+                plugin.LOGGER.error("Error happened while creating config.yml: ", e);
                 return;
             }
         }
 
-        // copy messages.yml if it doesn't exist
         if (!messages.exists()) {
             try {
                 InputStream resource = VelocityCoolList.class.getResourceAsStream("/messages.yml");
@@ -71,7 +177,7 @@ public final class Config {
                 Files.copy(resource, Path.of(messages.getFilePath()));
                 resource.close();
             } catch (Exception e) {
-                plugin.getLogger().error("Error happened while creating messages.yml: ", e);
+                plugin.LOGGER.error("Error happened while creating messages.yml: ", e);
                 return;
             }
         }
@@ -79,129 +185,19 @@ public final class Config {
         try {
             config.loadWithComments();
         } catch (IOException e) {
-            plugin.getLogger().error("Error happened while loading config.yml: ", e);
+            plugin.LOGGER.error("Error happened while loading config.yml: ", e);
             return;
         }
 
         try {
             messages.loadWithComments();
         } catch (IOException e) {
-            plugin.getLogger().error("Error happened while loading messages.yml: ", e);
+            plugin.LOGGER.error("Error happened while loading messages.yml: ", e);
             return;
         }
 
-        // check if the config from previous version needs migration
-        if (Path.of(plugin.getDataDirectory() + "/config.toml").toFile().exists()) {
-            migrateTomlConfig();
+        if (Path.of(plugin.DATADIRECTORY + "/config.toml").toFile().exists()) {
+            new Migration(messages, plugin, this).migrateOldTomlConfig();
         }
-    }
-
-    private static void loadWhitelist() throws IOException {
-        Path whitelistPath = Path.of(plugin.getDataDirectory() + "/whitelist.json");
-        // create Gson instance
-        Gson gson = new Gson();
-
-        // create json file if it doesn't exist and append an empty array
-        if (!Files.exists(whitelistPath)) {
-            Files.createFile(whitelistPath);
-            Files.writeString(whitelistPath, "[]");
-        }
-
-        // read json file
-        Reader reader = new InputStreamReader(whitelistPath.toFile().toURI().toURL().openStream());
-        whitelist = gson.fromJson(reader, HashSet.class);
-        reader.close();
-    }
-
-    public static void saveWhitelistFile() {
-        plugin.scheduleTask(() -> {
-            try {
-                Gson gson = new Gson();
-                // create json string
-                String json = gson.toJson(whitelist);
-
-                // write json file
-                Files.writeString(Path.of(plugin.getDataDirectory() + "/whitelist.json"), json);
-            } catch (IOException e) {
-                plugin.getLogger().error("Error happened while saving whitelist.json: ", e);
-            }
-        });
-    }
-
-    private static void saveConfigFile() {
-        plugin.scheduleTask(() -> {
-            try {
-                config.save();
-            } catch (IOException e) {
-                plugin.getLogger().error("Error happened while saving the config.yml: ", e);
-            }
-        });
-    }
-
-    public static void reload() throws IOException {
-        loadWhitelist();
-        messages.loadWithComments();
-        config.loadWithComments();
-    }
-
-    public static void setAndSave(String key, Object value) {
-        config.set(key, value);
-
-        saveConfigFile();
-    }
-
-    public static Object get(String key) {
-        return config.get(key);
-    }
-
-    public static Object get(String key, Object def) {
-        return config.get(key, def);
-    }
-
-    public static String getMessage(String key) {
-        return messages.getString(key);
-    }
-
-    private static void migrateTomlConfig() {
-        plugin.scheduleTask(() -> {
-            plugin.getLogger().info("Found the old config, migrating to the new one...");
-            Path oldConfigPath = Path.of(plugin.getDataDirectory() + "/config.toml");
-
-            // create toml instance
-            Toml toml = new Toml().read(oldConfigPath.toFile());
-
-            // validate the config
-            if (toml.getBoolean("enabled") == null || toml.getString("message") == null || toml.getString("prefix") == null) {
-                plugin.getLogger().info("The old config is missing something, skipping migration...");
-                return;
-            }
-
-            // copy values
-            config.set("enabled", toml.getBoolean("enabled"));
-            messages.set("kick_message", toml.getString("message"));
-            config.set("prefix", toml.getString("prefix"));
-
-            // save files
-            saveConfigFile();
-            try {
-                messages.save();
-            } catch (IOException e) {
-                plugin.getLogger().error("Error happened while saving the messages.yml: ", e);
-                return;
-            }
-
-            // delete old config file
-            oldConfigPath.toFile().delete();
-
-            // reload plugin and clear the toml table
-            try {
-                reload();
-            } catch (IOException e) {
-                plugin.getLogger().error("Error happened while migrating the old config to the new one: ", e);
-                return;
-            }
-
-            plugin.getLogger().info("Migration completed!");
-        });
     }
 }
