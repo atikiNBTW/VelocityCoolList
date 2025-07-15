@@ -13,7 +13,7 @@ public final class CommandHelper {
     private static final MiniMessage MINI_MESSAGE = MiniMessage.miniMessage();
 
     public static int about(CommandContext<CommandSource> context) {
-        context.getSource().sendMessage(MINI_MESSAGE.deserialize(Config.get("prefix") + " " + "<rainbow>VelocityCoolList by atikiNBTW" + "\n         <dark_green>Version 2.0.0-SNAPSHOT"));
+        context.getSource().sendMessage(MINI_MESSAGE.deserialize(Config.get("prefix") + " " + "<rainbow>VelocityCoolList by atikiNBTW" + "\n         <dark_green>Version 2.1.0-SNAPSHOT"));
 
         return Command.SINGLE_SUCCESS;
     }
