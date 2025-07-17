@@ -23,24 +23,3 @@ This plugin supports MiniMessage modern formatting, which allows you to make gra
 Here is what this formatting supports, its documentation is in config and [here](https://docs.advntr.dev/minimessage/format.html#standard-tags)!
 
 ![picture1](https://docs.advntr.dev/_images/rainbow_1.png) ![picture2](https://docs.advntr.dev/_images/newline_1.png) ![picture3](https://docs.advntr.dev/_images/insertion_1.png)
-
-## Configuration file
-All the configuration is in the config.yml file, here it is:
-```
-# Format - Minimessage, documetation - https://docs.advntr.dev/minimessage/format.html#standard-tags
-
-# Enable or disable Velocity Cool whitelist!
-enabled: true
-
-# Enable or disable automatic update checker
-update_check: true
-
-# Set the prefix of the plugin!
-prefix: "<gradient:#5e4fa2:#f79459>VelocityCoolList</gradient> <red><bold>>>></red>"
-
-# DANGEROUS: Here you can enable of disable the whitelist clear command, be careful!
-enable_clear_command: false
-
-# Do not touch
-config_version: 1
-```
