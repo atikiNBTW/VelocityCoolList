@@ -36,10 +36,10 @@ import java.util.Scanner;
         authors = {"atikiNBTW"}
 )
 public class VelocityCoolList {
-    public static Logger LOGGER = LoggerFactory.getLogger("VelocityCoolList-TEMPORARY");
+    public static final String VERSION = "2.1.0-SNAPSHOT";
+    public static Logger LOGGER = LoggerFactory.getLogger("VelocityCoolList-TEMP");
     public final Path DATADIRECTORY;
     private final ProxyServer PROXY;
-    private final String VERSION = "2.1.0-SNAPSHOT";
 
     @Inject
     public VelocityCoolList(ProxyServer proxy, Logger logger, @DataDirectory Path dataDirectory) {
@@ -51,7 +51,8 @@ public class VelocityCoolList {
     @Subscribe
     public void onProxyInitialization(ProxyInitializeEvent event) {
         Date startTime = new Date(System.currentTimeMillis());
-        new Config(this).initialize();
+        new Config(this).init();
+        new Whitelist(this).init();
 
         CommandManager commandManager = PROXY.getCommandManager();
 
@@ -74,7 +75,7 @@ public class VelocityCoolList {
         if (!Config.getInstance().getBoolean("enabled")) return;
         Player player = event.getPlayer();
 
-        if (player.hasPermission("vclist.bypass") || Config.getInstance().whitelistContains(player.getUsername()))
+        if (player.hasPermission("vclist.bypass") || Whitelist.getInstance().contains(player.getUsername()))
             return;
 
         player.disconnect(MiniMessage.miniMessage().deserialize(Config.getInstance().getMessage("kick_message")).asComponent());
@@ -104,7 +105,7 @@ public class VelocityCoolList {
                 String version = text.split("\"version_number\":\"")[1].split("\"")[0];
                 String newVerUrl = text.split("\"url\":\"")[1].split("\"")[0];
 
-                if (!version.equals(this.VERSION)) {
+                if (!version.equals(VERSION)) {
                     LOGGER.info("New version of the plugin is available, please update! Url to the new version: {}", newVerUrl);
                 }
             } catch (IOException e) {

@@ -1,15 +1,14 @@
-# Format - Minimessage, documetation - https://docs.advntr.dev/minimessage/format.html#standard-tags
+# You can you minimessage in the prefix field, usage - https://docs.advntr.dev/minimessage/format.html#standard-tags
 
-# Enable or disable Velocity Cool whitelist!
 enabled: true
 
-# Enable or disable automatic update checker
+# Toggle for update checker messages
 update_checker: true
 
-# Set the prefix of the plugin!
+# Plugin's system messages prefix
 prefix: "<gradient:#5e4fa2:#f79459>VelocityCoolList</gradient> <red><bold>>>></red>"
 
-# DANGEROUS: Here you can enable of disable the whitelist clear command, be careful!
+# Toggle for the clear command
 enable_clear_command: false
 
 # Do not touch

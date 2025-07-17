@@ -2,19 +2,18 @@ package com.atikinbtw.velocitycoollist.commands;
 
 import com.atikinbtw.velocitycoollist.Config;
 import com.atikinbtw.velocitycoollist.VelocityCoolList;
+import com.atikinbtw.velocitycoollist.Whitelist;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.context.CommandContext;
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.proxy.Player;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 
-import java.io.IOException;
-
 public final class CommandHelper {
     private static final MiniMessage MINI_MESSAGE = MiniMessage.miniMessage();
 
     public static int about(CommandContext<CommandSource> context) {
-        context.getSource().sendMessage(MINI_MESSAGE.deserialize(Config.getInstance().get("prefix") + " " + "<rainbow>VelocityCoolList by atikiNBTW" + "\n         <dark_green>Version 2.1.0-SNAPSHOT"));
+        context.getSource().sendMessage(MINI_MESSAGE.deserialize(Config.getInstance().getString("prefix") + " " + "VelocityCoolList v" + VelocityCoolList.VERSION));
 
         return Command.SINGLE_SUCCESS;
     }
@@ -24,7 +23,7 @@ public final class CommandHelper {
 
         String status = Config.getInstance().getBoolean("enabled") ? Config.getInstance().getMessage("whitelist_enabled") : Config.getInstance().getMessage("whitelist_disabled");
 
-        source.sendMessage(MINI_MESSAGE.deserialize(Config.getInstance().get("prefix") + " " +
+        source.sendMessage(MINI_MESSAGE.deserialize(Config.getInstance().getString("prefix") + " " +
                 replaceSource(
                         replaceStatus(Config.getInstance().getMessage("status"), status),
                         getSourceName(source)
@@ -37,11 +36,11 @@ public final class CommandHelper {
     public static int enable(CommandContext<CommandSource> context) {
         CommandSource source = context.getSource();
 
-        if ((boolean) Config.getInstance().get("enabled")) {
-            source.sendMessage(MINI_MESSAGE.deserialize(replaceSource(Config.getInstance().get("prefix") + " " + Config.getInstance().getMessage("already_enabled"), getSourceName(source))));
+        if (Config.getInstance().getBoolean("enabled")) {
+            source.sendMessage(MINI_MESSAGE.deserialize(replaceSource(Config.getInstance().getString("prefix") + " " + Config.getInstance().getMessage("already_enabled"), getSourceName(source))));
         } else {
             Config.getInstance().setAndSave("enabled", true);
-            source.sendMessage(MINI_MESSAGE.deserialize(Config.getInstance().get("prefix") + " " + replaceSource(Config.getInstance().getMessage("enable"), getSourceName(source))));
+            source.sendMessage(MINI_MESSAGE.deserialize(Config.getInstance().getString("prefix") + " " + replaceSource(Config.getInstance().getMessage("enable"), getSourceName(source))));
         }
 
         return Command.SINGLE_SUCCESS;
@@ -50,11 +49,11 @@ public final class CommandHelper {
     public static int disable(CommandContext<CommandSource> context) {
         CommandSource source = context.getSource();
 
-        if (!(boolean) Config.getInstance().get("enabled")) {
-            source.sendMessage(MINI_MESSAGE.deserialize(Config.getInstance().get("prefix") + " " + replaceSource(Config.getInstance().getMessage("already_disabled"), getSourceName(source))));
+        if (!(boolean) Config.getInstance().getBoolean("enabled")) {
+            source.sendMessage(MINI_MESSAGE.deserialize(Config.getInstance().getString("prefix") + " " + replaceSource(Config.getInstance().getMessage("already_disabled"), getSourceName(source))));
         } else {
             Config.getInstance().setAndSave("enabled", false);
-            source.sendMessage(MINI_MESSAGE.deserialize(Config.getInstance().get("prefix") + " " + replaceSource(Config.getInstance().getMessage("disable"), getSourceName(source))));
+            source.sendMessage(MINI_MESSAGE.deserialize(Config.getInstance().getString("prefix") + " " + replaceSource(Config.getInstance().getMessage("disable"), getSourceName(source))));
         }
 
         return Command.SINGLE_SUCCESS;
@@ -67,12 +66,12 @@ public final class CommandHelper {
         try {
             username = context.getArgument("username", String.class);
         } catch (Exception e) {
-            source.sendMessage(MINI_MESSAGE.deserialize(Config.getInstance().get("prefix") + " " + replaceSource(Config.getInstance().getMessage("add_incorrect_usage"), getSourceName(source))));
+            source.sendMessage(MINI_MESSAGE.deserialize(Config.getInstance().getString("prefix") + " " + replaceSource(Config.getInstance().getMessage("add_incorrect_usage"), getSourceName(source))));
             return Command.SINGLE_SUCCESS;
         }
 
-        if (Config.getInstance().whitelistContains(username)) {
-            source.sendMessage(MINI_MESSAGE.deserialize(Config.getInstance().get("prefix") + " " +
+        if (Whitelist.getInstance().contains(username)) {
+            source.sendMessage(MINI_MESSAGE.deserialize(Config.getInstance().getString("prefix") + " " +
                             replacePlayer(
                                     replaceSource(Config.getInstance().getMessage("already_on_whitelist"), getSourceName(source)),
                                     username)
@@ -83,9 +82,9 @@ public final class CommandHelper {
         }
 
         // add and save the file
-        Config.getInstance().addWhitelist(username);
-        Config.getInstance().saveWhitelistFile();
-        source.sendMessage(MINI_MESSAGE.deserialize(Config.getInstance().get("prefix") + " " +
+        Whitelist.getInstance().addPlayer(username);
+        Whitelist.getInstance().saveFile();
+        source.sendMessage(MINI_MESSAGE.deserialize(Config.getInstance().getString("prefix") + " " +
                         replacePlayer(
                                 replaceSource(Config.getInstance().getMessage("add"), getSourceName(source)),
                                 username)
@@ -102,12 +101,12 @@ public final class CommandHelper {
         try {
             username = context.getArgument("username", String.class);
         } catch (Exception e) {
-            source.sendMessage(MINI_MESSAGE.deserialize(Config.getInstance().get("prefix") + " " + replaceSource(Config.getInstance().getMessage("remove_incorrect_usage"), getSourceName(source))));
+            source.sendMessage(MINI_MESSAGE.deserialize(Config.getInstance().getString("prefix") + " " + replaceSource(Config.getInstance().getMessage("remove_incorrect_usage"), getSourceName(source))));
             return Command.SINGLE_SUCCESS;
         }
 
-        if (!Config.getInstance().whitelistContains(username)) {
-            source.sendMessage(MINI_MESSAGE.deserialize(Config.getInstance().get("prefix") + " " +
+        if (!Whitelist.getInstance().contains(username)) {
+            source.sendMessage(MINI_MESSAGE.deserialize(Config.getInstance().getString("prefix") + " " +
                             replacePlayer(
                                     replaceSource(Config.getInstance().getMessage("not_on_whitelist"), getSourceName(source)),
                                     username)
@@ -117,9 +116,9 @@ public final class CommandHelper {
         }
 
         // remove and save the file
-        Config.getInstance().removeWhitelist(username);
-        Config.getInstance().saveWhitelistFile();
-        source.sendMessage(MINI_MESSAGE.deserialize(Config.getInstance().get("prefix") + " " +
+        Whitelist.getInstance().removePlayer(username);
+        Whitelist.getInstance().saveFile();
+        source.sendMessage(MINI_MESSAGE.deserialize(Config.getInstance().getString("prefix") + " " +
                         replacePlayer(
                                 replaceSource(Config.getInstance().getMessage("remove"), getSourceName(source)),
                                 username)
@@ -132,16 +131,17 @@ public final class CommandHelper {
     public static int list(CommandContext<CommandSource> context) {
         CommandSource source = context.getSource();
 
-        // check if empty and return a message
-        if (Config.getInstance().isWhitelistEmpty()) {
-            source.sendMessage(MINI_MESSAGE.deserialize(Config.getInstance().get("prefix") + " " + replaceSource(Config.getInstance().getMessage("list_no_players"), getSourceName(source))));
+        if (Whitelist.getInstance().isWhitelistEmpty()) {
+            source.sendMessage(MINI_MESSAGE.deserialize(Config.getInstance().getString("prefix") + " " + replaceSource(Config.getInstance().getMessage("list_no_players"), getSourceName(source))));
             return Command.SINGLE_SUCCESS;
         }
 
-        // return the list of players in the whitelist
-        source.sendMessage(MINI_MESSAGE.deserialize(Config.getInstance().get("prefix") + " " +
+        source.sendMessage(MINI_MESSAGE.deserialize(Config.getInstance().getString("prefix") + " " +
                         replaceWhitelist(
-                                replaceSource(Config.getInstance().getMessage("list"), getSourceName(source)), String.valueOf(Config.getInstance().getWhitelist().size()), String.join(", ", Config.getInstance().getWhitelist()))
+                                replaceSource(Config.getInstance().getMessage("list"),
+                                        getSourceName(source)), String.valueOf(Whitelist.getInstance().getWhitelist().size()),
+                                String.join(", ", Whitelist.getInstance().getWhitelist())
+                        )
                 )
         );
 
@@ -152,29 +152,24 @@ public final class CommandHelper {
         CommandSource source = context.getSource();
 
         if (!Config.getInstance().getBoolean("enable_clear_command")) {
-            source.sendMessage(MINI_MESSAGE.deserialize(Config.getInstance().get("prefix") + " " + replaceSource(Config.getInstance().getMessage("clear_disabled"), getSourceName(source))));
+            source.sendMessage(MINI_MESSAGE.deserialize(Config.getInstance().getString("prefix") + " " + replaceSource(Config.getInstance().getMessage("clear_disabled"), getSourceName(source))));
             return Command.SINGLE_SUCCESS;
         }
 
-        Config.getInstance().clearWhitelist();
-        Config.getInstance().saveWhitelistFile();
+        Whitelist.getInstance().clear();
+        Whitelist.getInstance().saveFile();
 
-        source.sendMessage(MINI_MESSAGE.deserialize(Config.getInstance().get("prefix") + " " + replaceSource(Config.getInstance().getMessage("clear"), getSourceName(source))));
+        source.sendMessage(MINI_MESSAGE.deserialize(Config.getInstance().getString("prefix") + " " + replaceSource(Config.getInstance().getMessage("clear"), getSourceName(source))));
         return Command.SINGLE_SUCCESS;
     }
 
     public static int reload(CommandContext<CommandSource> context) {
         CommandSource source = context.getSource();
 
-        try {
-            Config.getInstance().reload();
-        } catch (IOException e) {
-            source.sendMessage(MINI_MESSAGE.deserialize(Config.getInstance().get("prefix") + " " + replaceSource(Config.getInstance().getMessage("reload_error"), getSourceName(source))));
-            VelocityCoolList.LOGGER.error("Error happened while reloading the plugin: ", e);
-            return Command.SINGLE_SUCCESS;
-        }
+        Config.getInstance().reload();
+        Whitelist.getInstance().reload();
 
-        source.sendMessage(MINI_MESSAGE.deserialize(Config.getInstance().get("prefix") + " " + replaceSource(Config.getInstance().getMessage("reload"), getSourceName(source))));
+        source.sendMessage(MINI_MESSAGE.deserialize(Config.getInstance().getString("prefix") + " " + replaceSource(Config.getInstance().getMessage("reload"), getSourceName(source))));
         return Command.SINGLE_SUCCESS;
     }
 
