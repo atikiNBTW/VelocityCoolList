@@ -72,10 +72,6 @@ public final class Config {
         return config.getBoolean(key);
     }
 
-    public Boolean getBoolean(String key, Boolean defaultValue) {
-        return config.getBoolean(key, defaultValue);
-    }
-
     public int getInt(String key) {
         return config.getInt(key);
     }
@@ -100,7 +96,7 @@ public final class Config {
         }
 
         if (!config.exists()) {
-            try (InputStream resource = VelocityCoolList.class.getResourceAsStream("/config.yml");) {
+            try (InputStream resource = VelocityCoolList.class.getResourceAsStream("/config.yml")) {
                 Files.copy(resource, Path.of(config.getFilePath()));
             } catch (Exception e) {
                 VelocityCoolList.LOGGER.error("Error happened while creating config.yml: ", e);

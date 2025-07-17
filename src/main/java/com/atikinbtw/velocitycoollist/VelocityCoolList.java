@@ -5,7 +5,6 @@ import com.google.inject.Inject;
 import com.velocitypowered.api.command.BrigadierCommand;
 import com.velocitypowered.api.command.CommandManager;
 import com.velocitypowered.api.command.CommandMeta;
-import com.velocitypowered.api.event.PostOrder;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.player.ServerPreConnectEvent;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
@@ -65,22 +64,23 @@ public class VelocityCoolList {
         commandManager.register(commandMeta, commandToRegister);
 
         LOGGER.info("VelocityCoolList has been enabled! Took {}ms", System.currentTimeMillis() - startTime.getTime());
-        if (Config.getInstance().getBoolean("update_check", true)) {
-            checkForUpdates();
-        }
+        scheduleTask(() -> {
+            if (Config.getInstance().getBoolean("update_checker"))
+                checkForUpdates();
+        });
     }
 
-    @Subscribe(priority = 1000, order = PostOrder.CUSTOM)
+    @Subscribe(priority = 30000)
     private void onPlayerJoin(ServerPreConnectEvent event) {
         if (!Config.getInstance().getBoolean("enabled")) return;
         Player player = event.getPlayer();
 
+        Config.getInstance().getInt("config_version");
         if (player.hasPermission("vclist.bypass") || Whitelist.getInstance().contains(player.getUsername()))
             return;
 
         player.disconnect(MiniMessage.miniMessage().deserialize(Config.getInstance().getMessage("kick_message")).asComponent());
         event.setResult(ServerPreConnectEvent.ServerResult.denied());
-
     }
 
     private void checkForUpdates() {
@@ -105,9 +105,8 @@ public class VelocityCoolList {
                 String version = text.split("\"version_number\":\"")[1].split("\"")[0];
                 String newVerUrl = text.split("\"url\":\"")[1].split("\"")[0];
 
-                if (!version.equals(VERSION)) {
-                    LOGGER.info("New version of the plugin is available, please update! Url to the new version: {}", newVerUrl);
-                }
+                if (!version.equals(VERSION))
+                    LOGGER.info("New version {} of the plugin is available, please update! Url to the new version: {}", version, newVerUrl);
             } catch (IOException e) {
                 LOGGER.error("Error happened while getting the latest plugin version: ", e);
             }
@@ -116,11 +115,6 @@ public class VelocityCoolList {
         scheduleTask(task);
     }
 
-    /**
-     * Schedule a task to be run.
-     *
-     * @param runnable the task to be scheduled
-     */
     public void scheduleTask(Runnable runnable) {
         PROXY.getScheduler().buildTask(this, runnable).schedule();
     }

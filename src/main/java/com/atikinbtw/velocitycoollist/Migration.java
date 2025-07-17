@@ -6,6 +6,7 @@ import org.simpleyaml.configuration.file.YamlFile;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 
 public class Migration {
     private final Config config;
@@ -24,11 +25,11 @@ public class Migration {
             return;
         }
 
-        switch (config.getInt("version")) {
+        switch (config.getInt("config_version")) {
             case 1 -> firstToSecondVerMigration();
             case 2 -> {
             }
-            default -> VelocityCoolList.LOGGER.error("Unknown config version: {}", config.getInt("version"));
+            default -> VelocityCoolList.LOGGER.error("Unknown config version: {}", config.getInt("config_version"));
         }
     }
 
@@ -42,8 +43,8 @@ public class Migration {
             prefix = config.getString("prefix");
             enableClearCommand = config.getBoolean("enable_clear_command");
 
-            try (InputStream resource = VelocityCoolList.class.getResourceAsStream("/config.yml");) {
-                Files.copy(resource, Path.of(configFile.getFilePath()));
+            try (InputStream resource = VelocityCoolList.class.getResourceAsStream("/config.yml")) {
+                Files.copy(resource, Path.of(configFile.getFilePath()), StandardCopyOption.REPLACE_EXISTING);
             } catch (Exception e) {
                 VelocityCoolList.LOGGER.error("Error happened while creating config.yml: ", e);
                 return;
@@ -58,13 +59,14 @@ public class Migration {
             config.saveConfigFile();
 
             config.reload();
+
+            VelocityCoolList.LOGGER.info("Migration completed!");
         });
     }
 
     public void migrateOldTomlConfig() {
         plugin.scheduleTask(() -> {
-            VelocityCoolList.LOGGER.info("Found the old config, migrating to the new one...");
-            Path oldConfigPath = Path.of(plugin.DATADIRECTORY + "/config.toml");
+            final Path oldConfigPath = Path.of(plugin.DATADIRECTORY + "/config.toml");
 
             Toml toml;
             try {
